@@ -1,14 +1,13 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { saveQuizResult } from './actions';
-import Link from 'next/link';
 
 // Дані квізу
 const QUESTIONS = [
   { id: 1, text: "Мені подобається розробляти детальні плани та бачити кінцеву мету проєкту.", role: "strategist" },
   { id: 2, text: "Я отримую задоволення від знайомства та спілкування з великою кількістю нових людей.", role: "networker" },
-  { id: 3, text: "Мені важливо, щоб усі документи, завдання та дедлайни були чітко структуровані.", role: "organizer" },
+  { id: 3, text: "Мені важливо, щоб усі документи, завдання та дедлайни були чітро структуровані.", role: "organizer" },
   { id: 4, text: "Я можу легко та переконливо виступати перед аудиторією або презентувати ідею.", role: "communicator" },
   { id: 5, text: "У складних ситуаціях я вмію знайти рішення, яке влаштує всі сторони конфлікту.", role: "negotiator" },
   { id: 6, text: "Я часто помічаю, коли моїм колегам не вистачає енергії, і намагаюся їх підбадьорити.", role: "motivator" },
@@ -29,11 +28,11 @@ const QUESTIONS = [
 ];
 
 const LIKERT_SCALE = [
-  { label: "Згоден", value: 2, color: "bg-green-500 hover:bg-green-600" },
-  { label: "Скоріше згоден", value: 1, color: "bg-green-400 hover:bg-green-500" },
-  { label: "Нейтрально", value: 0, color: "bg-gray-400 hover:bg-gray-500" },
-  { label: "Скоріше не згоден", value: -1, color: "bg-red-400 hover:bg-red-500" },
-  { label: "Не згоден", value: -2, color: "bg-red-500 hover:bg-red-600" }
+  { label: "Згоден", value: 2 },
+  { label: "Скоріше згоден", value: 1 },
+  { label: "Нейтрально", value: 0 },
+  { label: "Скоріше не згоден", value: -1 },
+  { label: "Не згоден", value: -2 }
 ];
 
 const ROLES_INFO = {
@@ -89,7 +88,7 @@ const ROLES_INFO = {
 };
 
 export default function QuizApp() {
-  const [step, setStep] = useState("onboarding");
+  const [step, setStep] = useState("welcome"); // welcome, onboarding, quiz, result
   const [userInfo, setUserInfo] = useState({ fullName: "", group: "", phone: "" });
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [scores, setScores] = useState({
@@ -98,27 +97,173 @@ export default function QuizApp() {
   const [finalRole, setFinalRole] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [phoneError, setPhoneError] = useState("");
+  const [hasSavedResult, setHasSavedResult] = useState(false);
 
-  const handleStart = (e) => {
-    e.preventDefault();
-    if (userInfo.fullName && userInfo.group && userInfo.phone) {
-      setStep("quiz");
+  // Refs for physics simulation
+  const rolesContainerRef = useRef(null);
+  const pillRefs = useRef([]);
+  const physicsCleanup = useRef(null);
+
+  // Fixed preset pill data for the welcome heap
+  const WELCOME_PILLS = [
+    { text: "🎯 Стратег",       color: "peach", w: 150 },
+    { text: "🤝 Нетворкер",     color: "red",   w: 165 },
+    { text: "📋",               color: "peach", w: 58 },
+    { text: "📣 Комунікатор",   color: "red",   w: 185 },
+    { text: "⚖️ Переговорник",  color: "peach", w: 192 },
+    { text: "🔥",               color: "red",   w: 58 },
+    { text: "💡 Інноватор",     color: "peach", w: 162 },
+  ];
+
+  const PILL_H = 44;
+
+  // On mount: check localStorage for saved results
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('quiz_result');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.role && ROLES_INFO[parsed.role]) {
+          setHasSavedResult(true);
+        }
+      }
+    } catch (e) {
+      // localStorage not available
+    }
+  }, []);
+
+  // Matter.js physics simulation for welcome pills
+  useEffect(() => {
+    if (step !== 'welcome') return;
+    let cancelled = false;
+
+    const initPhysics = async () => {
+      const Matter = (await import('matter-js')).default;
+      if (cancelled) return;
+
+      const container = rolesContainerRef.current;
+      if (!container) return;
+      const { width: cW, height: cH } = container.getBoundingClientRect();
+
+      const engine = Matter.Engine.create({ gravity: { x: 0, y: 1.8 } });
+
+      // Walls: bottom, left, right (no top — pills fall in from above)
+      const wallOpts = { isStatic: true, friction: 0.8, restitution: 0.1 };
+      Matter.Composite.add(engine.world, [
+        Matter.Bodies.rectangle(cW / 2, cH + 25, cW + 100, 50, wallOpts),
+        Matter.Bodies.rectangle(-25, cH / 2, 50, cH * 3, wallOpts),
+        Matter.Bodies.rectangle(cW + 25, cH / 2, 50, cH * 3, wallOpts),
+      ]);
+
+      // Create pill bodies — staggered start positions above the viewport
+      const bodies = WELCOME_PILLS.map((pill, i) => {
+        return Matter.Bodies.rectangle(
+          40 + Math.random() * (cW - 80),
+          -(i * 65 + 60),
+          pill.w,
+          PILL_H,
+          {
+            chamfer: { radius: PILL_H / 2 },
+            restitution: 0.25,
+            friction: 0.6,
+            density: 0.003,
+            angle: (Math.random() - 0.5) * 0.5,
+          }
+        );
+      });
+      Matter.Composite.add(engine.world, bodies);
+
+      // Run the physics engine
+      const runner = Matter.Runner.create();
+      Matter.Runner.run(runner, engine);
+
+      // Render loop — direct DOM updates for 60fps performance
+      let animId;
+      const update = () => {
+        bodies.forEach((body, i) => {
+          const el = pillRefs.current[i];
+          if (el) {
+            const x = body.position.x - WELCOME_PILLS[i].w / 2;
+            const y = body.position.y - PILL_H / 2;
+            el.style.transform = `translate(${x}px, ${y}px) rotate(${body.angle}rad)`;
+            el.style.opacity = '1';
+          }
+        });
+        animId = requestAnimationFrame(update);
+      };
+      animId = requestAnimationFrame(update);
+
+      // Store cleanup function
+      physicsCleanup.current = () => {
+        cancelAnimationFrame(animId);
+        Matter.Runner.stop(runner);
+        Matter.Engine.clear(engine);
+      };
+    };
+
+    initPhysics();
+
+    return () => {
+      cancelled = true;
+      if (physicsCleanup.current) {
+        physicsCleanup.current();
+        physicsCleanup.current = null;
+      }
+    };
+  }, [step]);
+
+  // Restore saved results and jump to result screen
+  const viewSavedResults = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('quiz_result'));
+      if (saved && saved.role && ROLES_INFO[saved.role]) {
+        setFinalRole(saved.role);
+        setUserInfo({
+          fullName: saved.fullName || "",
+          group: saved.group || "",
+          phone: saved.phone || ""
+        });
+        setIsSaved(true);
+        setStep("result");
+      }
+    } catch (e) {
+      // fail silently
     }
   };
 
-  const handleAnswer = (value) => {
-    const currentRole = QUESTIONS[currentQuestionIndex].role;
-    const newScores = { 
-      ...scores, 
-      [currentRole]: scores[currentRole] + value 
-    };
-    setScores(newScores);
-
-    if (currentQuestionIndex < QUESTIONS.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-    } else {
-      calculateResult(newScores);
+  const handleStart = (e) => {
+    e.preventDefault();
+    
+    // Phone validation
+    const phoneDigits = userInfo.phone.replace(/\D/g, '');
+    if (phoneDigits.length < 10) {
+      setPhoneError("Будь ласка, введіть коректний номер телефону (мінімум 10 цифр)");
+      return;
     }
+    setPhoneError("");
+    setStep("quiz");
+  };
+
+  const handleAnswer = (value) => {
+    setSelectedAnswer(value);
+    
+    setTimeout(() => {
+      const currentRole = QUESTIONS[currentQuestionIndex].role;
+      const newScores = { 
+        ...scores, 
+        [currentRole]: scores[currentRole] + value 
+      };
+      setScores(newScores);
+      setSelectedAnswer(null);
+
+      if (currentQuestionIndex < QUESTIONS.length - 1) {
+        setCurrentQuestionIndex(prev => prev + 1);
+      } else {
+        calculateResult(newScores);
+      }
+    }, 400);
   };
 
   const calculateResult = async (finalScores) => {
@@ -136,7 +281,20 @@ export default function QuizApp() {
     setFinalRole(winningRole);
     setStep("result");
 
-    // Відправка даних на наш Next.js бекенд -> Supabase
+    // Save to localStorage so user can view results after reload
+    try {
+      localStorage.setItem('quiz_result', JSON.stringify({
+        role: winningRole,
+        fullName: userInfo.fullName,
+        group: userInfo.group,
+        phone: userInfo.phone,
+        timestamp: Date.now()
+      }));
+      setHasSavedResult(true);
+    } catch (e) {
+      // localStorage not available
+    }
+
     try {
       await saveQuizResult({
         full_name: userInfo.fullName,
@@ -156,164 +314,268 @@ export default function QuizApp() {
   const restartQuiz = () => {
     setScores({ strategist: 0, networker: 0, organizer: 0, communicator: 0, negotiator: 0, motivator: 0, innovator: 0 });
     setCurrentQuestionIndex(0);
-    setStep("onboarding");
+    setStep("welcome");
     setUserInfo({ fullName: "", group: "", phone: "" });
     setIsSaved(false);
+    setSelectedAnswer(null);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-      {/* Лінк на адмінку */}
-      <div className="w-full max-w-2xl flex justify-end mb-4">
-        <Link href="/results" className="text-sm text-blue-600 hover:underline">
-          Дивитися всі результати →
-        </Link>
-      </div>
-
-      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className="app-wrapper">
+      <div className="app-container">
         
-        {/* Екран 1: Реєстрація */}
+        {/* Step 1: Welcome Page */}
+        {step === "welcome" && (
+          <div className="welcome-container">
+            <div className="welcome-top">
+              <div className="welcome-card">
+                <div>
+                  <h1 className="welcome-title">
+                    Ролі, що підходять<br />твоєму стилю
+                  </h1>
+                </div>
+                
+                <div className="welcome-roles-wrapper" ref={rolesContainerRef}>
+                  {WELCOME_PILLS.map((pill, i) => (
+                    <div 
+                      key={i}
+                      ref={el => pillRefs.current[i] = el}
+                      className={`floating-pill physics-pill ${pill.color === 'peach' ? 'pill-peach' : 'pill-red'}`}
+                    >
+                      {pill.text}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="welcome-bottom">
+              <div className="welcome-bottom-inner">
+                <h2 className="welcome-subtitle">
+                  Контент квізу, підібраний під твої інтереси
+                </h2>
+                <p className="welcome-description">
+                  Дізнайся свою ідеальну роль у Студентському уряді. Ми підберемо позицію, яка найкраще відповідає твоїм навичкам та амбіціям.
+                </p>
+
+                {/* Saved results banner */}
+                {hasSavedResult && (
+                  <div className="saved-results-banner">
+                    <div className="saved-results-info">
+                      <span className="saved-results-title">Ваш результат збережено</span>
+                      <span className="saved-results-subtitle">Ви вже проходили цей тест</span>
+                    </div>
+                    <button onClick={viewSavedResults} className="saved-results-btn">
+                      Переглянути
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <button 
+                onClick={() => setStep("onboarding")}
+                className="btn-primary"
+              >
+                Далі
+              </button>
+          </div>
+        )}
+
+        {/* Step 2: Onboarding (Registration) */}
         {step === "onboarding" && (
-          <div className="p-8">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Твоя роль у команді</h1>
-              <p className="text-gray-500">Пройди тест, щоб дізнатися свої сильні сторони та ідеальну позицію в Студентському уряді.</p>
+          <div className="onboarding-container">
+            <div className="onboarding-header">
+              <h1 className="onboarding-title">Давай познайомимось</h1>
+              <p className="onboarding-subtitle">Ці дані допоможуть нам зберегти твій результат.</p>
             </div>
             
-            <form onSubmit={handleStart} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Прізвище та Ім'я</label>
-                <input 
-                  required
-                  type="text" 
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition"
-                  placeholder="Іваненко Іван"
-                  value={userInfo.fullName}
-                  onChange={e => setUserInfo({...userInfo, fullName: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Академічна група</label>
-                <input 
-                  required
-                  type="text" 
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition"
-                  placeholder="Наприклад: КН-31"
-                  value={userInfo.group}
-                  onChange={e => setUserInfo({...userInfo, group: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Номер телефону</label>
-                <input 
-                  required
-                  type="tel" 
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition"
-                  placeholder="+380..."
-                  value={userInfo.phone}
-                  onChange={e => setUserInfo({...userInfo, phone: e.target.value})}
-                />
-              </div>
-              
-              <button 
-                type="submit"
-                className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
-              >
-                Почати тест
-              </button>
-            </form>
+            <div className="onboarding-card">
+              <form onSubmit={handleStart} className="form-layout">
+                <div className="form-fields">
+                  <div className="form-group">
+                    <label className="form-label">Прізвище та Ім&apos;я</label>
+                    <input 
+                      required
+                      type="text" 
+                      className="input-field"
+                      placeholder="Іваненко Іван"
+                      value={userInfo.fullName}
+                      onChange={e => setUserInfo({...userInfo, fullName: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Академічна група</label>
+                    <input 
+                      required
+                      type="text" 
+                      className="input-field"
+                      placeholder="Наприклад: КН-31"
+                      value={userInfo.group}
+                      onChange={e => setUserInfo({...userInfo, group: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Номер телефону</label>
+                    <input 
+                      required
+                      type="tel" 
+                      className={`input-field ${phoneError ? 'input-error' : ''}`}
+                      placeholder="+380..."
+                      value={userInfo.phone}
+                      onChange={e => {
+                        setUserInfo({...userInfo, phone: e.target.value});
+                        if (phoneError) setPhoneError("");
+                      }}
+                    />
+                    {phoneError && <p className="error-text">{phoneError}</p>}
+                  </div>
+                </div>
+                
+                <div className="form-submit-area">
+                  <button 
+                    type="submit"
+                    className="btn-primary-full"
+                  >
+                    Почати тест
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
 
-        {/* Екран 2: Запитання квізу */}
+        {/* Step 3: Quiz Questions */}
         {step === "quiz" && (
-          <div className="p-8">
-            <div className="mb-6">
-              <div className="flex justify-between text-sm font-medium text-gray-500 mb-2">
-                <span>Питання {currentQuestionIndex + 1} з {QUESTIONS.length}</span>
-                <span>{Math.round(((currentQuestionIndex) / QUESTIONS.length) * 100)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                  style={{ width: `${((currentQuestionIndex) / QUESTIONS.length) * 100}%` }}
-                ></div>
+          <div className="quiz-container">
+            <div className="quiz-header">
+              <h1 className="quiz-title">
+                Час випробувати себе!
+              </h1>
+              <div className="progress-container">
+                <svg className="progress-ring">
+                  <circle 
+                    cx="32" cy="32" r="28" 
+                    fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4" 
+                  />
+                  <circle 
+                    cx="32" cy="32" r="28" 
+                    fill="none" stroke="#bef264" strokeWidth="4" 
+                    strokeDasharray={175.9}
+                    strokeDashoffset={175.9 - (175.9 * (currentQuestionIndex + 1) / QUESTIONS.length)}
+                    className="progress-ring-fill"
+                  />
+                </svg>
+                <span className="progress-text">
+                  {currentQuestionIndex + 1}/{QUESTIONS.length}
+                </span>
               </div>
             </div>
 
-            <h2 className="text-2xl font-semibold text-gray-800 text-center mb-8 min-h-[80px] flex items-center justify-center">
-              {QUESTIONS[currentQuestionIndex].text}
-            </h2>
+            <div className="quiz-card">
+              <div className="quiz-card-stack"></div>
+              
+              <div>
+                <span className="question-badge">
+                  Питання {currentQuestionIndex + 1}
+                </span>
+                <h2 className="question-text">
+                  {QUESTIONS[currentQuestionIndex].text}
+                </h2>
+              </div>
 
-            <div className="flex flex-col space-y-3">
-              {LIKERT_SCALE.map((option, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleAnswer(option.value)}
-                  className={`w-full text-white font-medium py-3 px-6 rounded-xl transition duration-200 shadow-sm ${option.color}`}
-                >
-                  {option.label}
-                </button>
-              ))}
+              <div className="answers-list">
+                {LIKERT_SCALE.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(option.value)}
+                    className={`answer-btn ${selectedAnswer === option.value ? 'selected' : ''}`}
+                  >
+                    <span>{option.label}</span>
+                    {selectedAnswer === option.value && (
+                      <div className="selected-icon">
+                        <svg className="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Екран 3: Результати */}
-        {step === "result" && finalRole && (
-          <div className="p-8">
-            <div className="text-center mb-6 border-b pb-6 border-gray-200">
-              <span className="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold tracking-wide uppercase mb-3">
-                Твій результат
-              </span>
-              <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
-                {ROLES_INFO[finalRole].title}
-              </h1>
-              <p className="text-lg text-gray-600 italic">
-                "{ROLES_INFO[finalRole].subtitle}"
-              </p>
-            </div>
-
-            <div className="space-y-5">
-              <div className="bg-gray-50 p-5 rounded-xl">
-                <h3 className="font-bold text-gray-800 mb-2 flex items-center">
-                  🦸 Твій прояв у команді:
-                </h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{ROLES_INFO[finalRole].manifestation}</p>
+        {/* Step 4: Results */}
+        {step === "result" && finalRole && ROLES_INFO[finalRole] && (
+          <div className="results-container">
+            <div className="results-card">
+              <h1 className="results-header-title">Результати</h1>
+              
+              <div className="results-role-section">
+                <h2 className="results-role-title">
+                  Ти – {ROLES_INFO[finalRole].title}!
+                </h2>
+                <p className="results-role-subtitle">
+                  «{ROLES_INFO[finalRole].subtitle}»
+                </p>
               </div>
 
-              <div className="bg-blue-50 p-5 rounded-xl border border-blue-100">
-                <h3 className="font-bold text-blue-900 mb-2 flex items-center">
-                  🚀 Можливості в студентському уряді:
-                </h3>
-                <p className="text-blue-800 text-sm leading-relaxed">{ROLES_INFO[finalRole].opportunities}</p>
+              <div className="aspect-cards-list">
+                <div className="aspect-card">
+                  <div className="aspect-card-header">
+                    <div className="aspect-icon-circle">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                    </div>
+                    <h3 className="aspect-title">Твій прояв у нашій команді</h3>
+                  </div>
+                  <p className="aspect-description">{ROLES_INFO[finalRole].manifestation}</p>
+                </div>
+
+                <div className="aspect-card">
+                  <div className="aspect-card-header">
+                    <div className="aspect-icon-circle">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                        <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                        <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+                        <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+                      </svg>
+                    </div>
+                    <h3 className="aspect-title">Твої можливості</h3>
+                  </div>
+                  <p className="aspect-description">{ROLES_INFO[finalRole].opportunities}</p>
+                </div>
+
+                <div className="aspect-card">
+                  <div className="aspect-card-header">
+                    <div className="aspect-icon-circle">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                        <polyline points="16 7 22 7 22 13" />
+                      </svg>
+                    </div>
+                    <h3 className="aspect-title">Точки росту</h3>
+                  </div>
+                  <p className="aspect-description">{ROLES_INFO[finalRole].growth}</p>
+                </div>
               </div>
 
-              <div className="bg-orange-50 p-5 rounded-xl border border-orange-100">
-                <h3 className="font-bold text-orange-900 mb-2 flex items-center">
-                  📈 Точки росту:
-                </h3>
-                <p className="text-orange-800 text-sm leading-relaxed">{ROLES_INFO[finalRole].growth}</p>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
-              <button 
-                disabled={isSaving || isSaved}
-                className={`flex-1 font-bold py-3 px-6 rounded-xl transition duration-200 text-center ${
-                  isSaved 
-                    ? "bg-green-100 text-green-800 cursor-default" 
-                    : "bg-green-600 hover:bg-green-700 text-white"
-                }`}
-              >
-                {isSaving ? "Збереження..." : isSaved ? "Заявка подана! ✅" : "Подати заявку в команду"}
-              </button>
               <button 
                 onClick={restartQuiz}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-xl transition duration-200 text-center"
+                className="btn-primary-full"
               >
                 Пройти ще раз
               </button>
+              
+              {isSaving && !isSaved && (
+                <p className="saving-text">Зберігаємо результати...</p>
+              )}
             </div>
           </div>
         )}
