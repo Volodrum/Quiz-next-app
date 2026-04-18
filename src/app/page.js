@@ -89,20 +89,37 @@ const ROLES_INFO = {
 
 const normalizePhoneInput = (value) => {
   const digits = value.replace(/\D/g, "");
-  if (!digits) return "";
 
-  // +CC XXX XXX XXX
-  const trimmedDigits = digits.slice(0, 11); // 2 for country code + 9 for local number
-  const countryCode = trimmedDigits.slice(0, 2);
-  const localPart = trimmedDigits.slice(2);
-  const groupedLocalPart = localPart.match(/.{1,3}/g)?.join(" ") || "";
+  let mainDigits = digits;
+  if (!mainDigits.startsWith("380")) {
+    mainDigits = "380" + digits.replace(/^0+/, ""); // Handle edge case where user types 0
+  }
 
-  return `+${countryCode}${groupedLocalPart ? ` ${groupedLocalPart}` : ""}`;
+  // Keep max 12 digits (3 for 380 + 9 for the rest)
+  const trimmed = mainDigits.slice(0, 12);
+
+  // Format: +380 XX XXX XX XX
+  const rest = trimmed.slice(3);
+  let result = "+380";
+
+  if (rest.length > 0) {
+    const p1 = rest.slice(0, 2);
+    const p2 = rest.slice(2, 5);
+    const p3 = rest.slice(5, 7);
+    const p4 = rest.slice(7, 9);
+
+    if (p1) result += ` ${p1}`;
+    if (p2) result += ` ${p2}`;
+    if (p3) result += ` ${p3}`;
+    if (p4) result += ` ${p4}`;
+  }
+
+  return result;
 };
 
 export default function QuizApp() {
   const [step, setStep] = useState("welcome"); // welcome, onboarding, quiz, result
-  const [userInfo, setUserInfo] = useState({ fullName: "", group: "", phone: "" });
+  const [userInfo, setUserInfo] = useState({ fullName: "", group: "", phone: "+380" });
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [scores, setScores] = useState({
     strategist: 0, networker: 0, organizer: 0, communicator: 0, negotiator: 0, motivator: 0, innovator: 0
@@ -121,13 +138,13 @@ export default function QuizApp() {
 
   // Fixed preset pill data for the welcome heap
   const WELCOME_PILLS = [
-    { text: "🎯 Стратег",       color: "peach", w: 150 },
-    { text: "🤝 Нетворкер",     color: "red",   w: 165 },
-    { text: "📋",               color: "peach", w: 58 },
-    { text: "📣 Комунікатор",   color: "red",   w: 185 },
-    { text: "⚖️ Переговорник",  color: "peach", w: 192 },
-    { text: "🔥",               color: "red",   w: 58 },
-    { text: "💡 Інноватор",     color: "peach", w: 162 },
+    { text: "📸 SMM", color: "peach", w: 150 },
+    { text: "🤖 Кодер", color: "red", w: 165 },
+    { text: "⚽", color: "peach", w: 58 },
+    { text: "📣 Комунікатор", color: "red", w: 185 },
+    { text: "⚖️ Переговорник", color: "peach", w: 192 },
+    { text: "🔥", color: "red", w: 58 },
+    { text: "💡 Інноватор", color: "peach", w: 162 },
   ];
 
   const PILL_H = 44;
@@ -271,11 +288,11 @@ export default function QuizApp() {
 
   const handleStart = (e) => {
     e.preventDefault();
-    
-    // Phone validation
+
+    // Phone validation (+380 XX XXX XX XX)
     const normalizedPhone = normalizePhoneInput(userInfo.phone);
-    if (!/^\+\d{2}(?: \d{3}){3}$/.test(normalizedPhone)) {
-      setPhoneError("Формат номера: +CC XXX XXX XXX");
+    if (!/^\+380 \d{2} \d{3} \d{2} \d{2}$/.test(normalizedPhone)) {
+      setPhoneError("Формат номера: +380 XX XXX XX XX");
       return;
     }
     setUserInfo(prev => ({ ...prev, phone: normalizedPhone }));
@@ -285,12 +302,12 @@ export default function QuizApp() {
 
   const handleAnswer = (value) => {
     setSelectedAnswer(value);
-    
+
     setTimeout(() => {
       const currentRole = QUESTIONS[currentQuestionIndex].role;
-      const newScores = { 
-        ...scores, 
-        [currentRole]: scores[currentRole] + value 
+      const newScores = {
+        ...scores,
+        [currentRole]: scores[currentRole] + value
       };
       setScores(newScores);
       setSelectedAnswer(null);
@@ -314,7 +331,7 @@ export default function QuizApp() {
         winningRole = role;
       }
     }
-    
+
     setFinalRole(winningRole);
     setStep("result");
 
@@ -360,7 +377,7 @@ export default function QuizApp() {
   return (
     <div className="app-wrapper">
       <div className="app-container">
-        
+
         {/* Step 1: Welcome Page */}
         {step === "welcome" && (
           <div className="welcome-container">
@@ -368,13 +385,13 @@ export default function QuizApp() {
               <div className="welcome-card">
                 <div>
                   <h1 className="welcome-title">
-                    Ролі, що підходять<br />твоєму стилю
+                    Roles That Match<br />Your Style
                   </h1>
                 </div>
-                
+
                 <div className="welcome-roles-wrapper" ref={rolesContainerRef}>
                   {WELCOME_PILLS.map((pill, i) => (
-                    <div 
+                    <div
                       key={i}
                       ref={el => pillRefs.current[i] = el}
                       className={`floating-pill physics-pill ${pill.color === 'peach' ? 'pill-peach' : 'pill-red'}`}
@@ -407,7 +424,7 @@ export default function QuizApp() {
                   </div>
                 )}
               </div>
-              <button 
+              <button
                 onClick={() => setStep("onboarding")}
                 className="btn-primary"
               >
@@ -421,59 +438,59 @@ export default function QuizApp() {
         {step === "onboarding" && (
           <div className="onboarding-container">
             <div className="onboarding-header">
-              <h1 className="onboarding-title">Давай познайомимось</h1>
+              <h1 className="onboarding-title">Розкажи про себе!</h1>
               <p className="onboarding-subtitle">Ці дані допоможуть нам зберегти твій результат.</p>
             </div>
-            
+
             <div className="onboarding-card">
               <form onSubmit={handleStart} className="form-layout">
                 <div className="form-fields">
                   <div className="form-group">
                     <label className="form-label">Прізвище та Ім&apos;я</label>
-                    <input 
+                    <input
                       required
-                      type="text" 
+                      type="text"
                       className="input-field"
                       placeholder="Іваненко Іван"
                       value={userInfo.fullName}
-                      onChange={e => setUserInfo({...userInfo, fullName: e.target.value})}
+                      onChange={e => setUserInfo({ ...userInfo, fullName: e.target.value })}
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Академічна група</label>
-                    <input 
+                    <input
                       required
-                      type="text" 
+                      type="text"
                       className="input-field"
                       placeholder="Наприклад: КН-31"
                       value={userInfo.group}
-                      onChange={e => setUserInfo({...userInfo, group: e.target.value})}
+                      onChange={e => setUserInfo({ ...userInfo, group: e.target.value })}
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Номер телефону</label>
-                    <input 
+                    <input
                       required
-                      type="tel" 
+                      type="tel"
                       className={`input-field ${phoneError ? 'input-error' : ''}`}
-                      placeholder="+38 000 000 000"
+                      placeholder="+380 00 000 00 00"
                       inputMode="numeric"
                       autoComplete="tel"
-                      pattern={"\\+\\d{2}(?: \\d{3}){3}"}
-                      title="Формат: +CC XXX XXX XXX"
-                      maxLength={15}
+                      pattern={"\\+380 \\d{2} \\d{3} \\d{2} \\d{2}"}
+                      title="Формат: +380 XX XXX XX XX"
+                      maxLength={17}
                       value={userInfo.phone}
                       onChange={e => {
-                        setUserInfo({...userInfo, phone: normalizePhoneInput(e.target.value)});
+                        setUserInfo({ ...userInfo, phone: normalizePhoneInput(e.target.value) });
                         if (phoneError) setPhoneError("");
                       }}
                     />
                     {phoneError && <p className="error-text">{phoneError}</p>}
                   </div>
                 </div>
-                
+
                 <div className="form-submit-area">
-                  <button 
+                  <button
                     type="submit"
                     className="btn-primary-full"
                   >
@@ -490,17 +507,17 @@ export default function QuizApp() {
           <div className="quiz-container">
             <div className="quiz-header">
               <h1 className="quiz-title">
-                Час випробувати себе!
+                Випробуй себе!
               </h1>
               <div className="progress-container">
                 <svg className="progress-ring">
-                  <circle 
-                    cx="32" cy="32" r="28" 
-                    fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4" 
+                  <circle
+                    cx="32" cy="32" r="28"
+                    fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4"
                   />
-                  <circle 
-                    cx="32" cy="32" r="28" 
-                    fill="none" stroke="#bef264" strokeWidth="4" 
+                  <circle
+                    cx="32" cy="32" r="28"
+                    fill="none" stroke="#bef264" strokeWidth="4"
                     strokeDasharray={175.9}
                     strokeDashoffset={175.9 - (175.9 * (currentQuestionIndex + 1) / QUESTIONS.length)}
                     className="progress-ring-fill"
@@ -514,7 +531,7 @@ export default function QuizApp() {
 
             <div className="quiz-card">
               <div className="quiz-card-stack"></div>
-              
+
               <div>
                 <span className="question-badge">
                   Питання {currentQuestionIndex + 1}
@@ -551,7 +568,7 @@ export default function QuizApp() {
           <div className="results-container">
             <div className="results-card">
               <h1 className="results-header-title">Результати</h1>
-              
+
               <div className="results-role-section">
                 <h2 className="results-role-title">
                   Ти – {ROLES_INFO[finalRole].title}!
@@ -606,13 +623,13 @@ export default function QuizApp() {
                 </div>
               </div>
 
-              <button 
+              <button
                 onClick={restartQuiz}
                 className="btn-primary-full"
               >
                 Пройти ще раз
               </button>
-              
+
               {isSaving && !isSaved && (
                 <p className="saving-text">Зберігаємо результати...</p>
               )}

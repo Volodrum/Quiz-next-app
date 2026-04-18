@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'DotumCustom';
+  src: url('/dotum.ttc') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* ===========================
    CSS Variables
    =========================== */
@@ -27,23 +34,32 @@
   --color-primary-dark: var(--primary-dark);
   --color-primary-accent: var(--primary-accent);
   --color-card-bg: var(--card-bg);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: ui-monospace, monospace;
 }
 
 /* ===========================
    Global / Body
    =========================== */
-body {
+* {
+  font-family: var(--font-inter), sans-serif;
+}
+
+body,
+button,
+input,
+select,
+textarea {
   background-color: #121212;
   color: var(--gray-900);
-  font-family: var(--font-geist-sans), "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 @media (max-width: 767px) {
-  html, body {
+
+  html,
+  body {
     overflow: hidden;
     position: fixed;
     width: 100%;
@@ -51,6 +67,7 @@ body {
     overscroll-behavior-y: none;
   }
 }
+
 
 /* ===========================
    App Layout (Quiz wrapper)
@@ -106,14 +123,17 @@ body {
   overflow: none;
   display: flex;
   flex-direction: column;
-  padding: 2rem;
+  padding: 1.5rem;
   background: radial-gradient(circle at center, var(--burgundy-deep) 0%, #2a0505 100%);
 }
 
 .welcome-title {
   font-size: 34px;
-  font-weight: 300;
-  color: white;
+  font-weight: 400;
+  background: linear-gradient(to right, #fff, #B17D7D);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   line-height: 1.1;
   letter-spacing: -0.025em;
   z-index: 20;
@@ -130,7 +150,7 @@ body {
 .welcome-bottom {
   flex: 1;
   background-color: white;
-  padding: 1rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
 }
@@ -141,7 +161,8 @@ body {
 
 .welcome-subtitle {
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 550;
+  font-family: 'DotumCustom', var(--font-inter), sans-serif;
   color: var(--gray-900);
   margin-bottom: 1rem;
   line-height: 1.25;
@@ -189,6 +210,26 @@ body {
   display: flex;
   flex-direction: column;
   box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  /* Added scroll to card */
+  min-height: 0;
+  /* Essential for flex scrolling */
+  /* Thin custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-300) transparent;
+}
+
+.onboarding-card::-webkit-scrollbar {
+  width: 4px;
+}
+
+.onboarding-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.onboarding-card::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 10px;
 }
 
 /* ===========================
@@ -205,6 +246,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding-right: 0.25rem;
 }
 
 .form-submit-area {
@@ -311,7 +353,7 @@ body {
   font-size: 28px;
   font-weight: 700;
   color: white;
-  max-width: 220px;
+  max-width: 250px;
   line-height: 1.1;
 }
 
@@ -350,6 +392,23 @@ body {
   flex-direction: column;
   box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
   position: relative;
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-300) transparent;
+}
+
+.quiz-card::-webkit-scrollbar {
+  width: 4px;
+}
+
+.quiz-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.quiz-card::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 10px;
 }
 
 .quiz-card-stack {
@@ -452,8 +511,24 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  justify-content: space-between;
+  justify-content: flex-start;
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-300) transparent;
+}
+
+.results-card::-webkit-scrollbar {
+  width: 4px;
+}
+
+.results-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.results-card::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 10px;
 }
 
 .results-header-title {
@@ -542,8 +617,15 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* ===========================
@@ -597,7 +679,7 @@ body {
   font-size: 1.125rem;
   cursor: pointer;
   border: none;
-  margin: 0;
+  margin: 0 0 1.5rem 0;
   text-decoration: none;
 }
 
@@ -665,6 +747,7 @@ body {
     align-items: center;
     padding: 2rem;
   }
+
   .admin-container-inner {
     max-width: 1200px;
     width: 100%;
@@ -1032,8 +1115,10 @@ body {
 
 @media (min-width: 768px) {
   .app-wrapper {
-    background-color: white; /* Make background white to blend in */
+    background-color: white;
+    /* Make background white to blend in */
   }
+
   .app-container {
     height: 100vh;
     height: 100dvh;
@@ -1048,10 +1133,12 @@ body {
     flex-direction: row;
     height: 100%;
   }
+
   .welcome-top {
     width: 50%;
     height: 100%;
   }
+
   .welcome-bottom {
     width: 50%;
     height: 100%;
@@ -1059,13 +1146,15 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 1rem;
+    padding: 1.5rem;
     text-align: center;
   }
+
   .welcome-card {
     border-radius: 0;
     width: 100%;
   }
+
   .welcome-title {
     text-align: center;
   }
@@ -1074,6 +1163,7 @@ body {
   .onboarding-container {
     flex-direction: row;
   }
+
   .onboarding-header {
     width: 50%;
     display: flex;
@@ -1083,6 +1173,7 @@ body {
     padding: 4rem;
     text-align: center;
   }
+
   .onboarding-card {
     width: 50%;
     border-radius: 0;
@@ -1092,7 +1183,8 @@ body {
     align-items: center;
     padding: 4rem;
   }
-  .onboarding-card > form {
+
+  .onboarding-card>form {
     width: 100%;
     max-width: 480px;
   }
@@ -1101,6 +1193,7 @@ body {
   .quiz-container {
     flex-direction: row;
   }
+
   .quiz-header {
     width: 40%;
     display: flex;
@@ -1111,6 +1204,7 @@ body {
     gap: 3rem;
     text-align: center;
   }
+
   .quiz-card {
     width: 60%;
     border-radius: 0;
@@ -1119,19 +1213,22 @@ body {
     justify-content: center;
     padding: 4rem;
   }
-  .quiz-card > div {
+
+  .quiz-card>div {
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
   }
+
   .quiz-card-stack {
     display: none;
   }
-  
+
   /* Desktop layout for results screen */
   .results-container {
     flex-direction: row;
   }
+
   .results-card {
     width: 100%;
     border-radius: 0;
@@ -1141,16 +1238,20 @@ body {
     align-items: center;
     justify-content: center;
   }
-  .results-card > * {
+
+  .results-card>* {
     max-width: 1000px;
   }
+
   .results-header-title {
     font-size: 36px;
     text-align: center;
   }
+
   .results-role-section {
     text-align: center;
   }
+
   .aspect-cards-list {
     flex-direction: row;
     flex-wrap: wrap;
@@ -1158,9 +1259,11 @@ body {
     gap: 1.5rem;
     width: 100%;
   }
+
   .aspect-card {
     width: calc(33.333% - 1rem);
   }
+
   .btn-primary-full {
     width: 300px;
     margin: 0 auto;
