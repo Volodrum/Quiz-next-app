@@ -1,14 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Jeju+Gothic&display=swap");
 @import "tailwindcss";
-
-@font-face {
-  font-family: 'DotumCustom';
-  src:
-    url('/dotum.ttc') format('truetype'),
-    url('/UnDotum.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
 
 /* ===========================
    CSS Variables
@@ -37,7 +28,7 @@
   --color-primary-dark: var(--primary-dark);
   --color-primary-accent: var(--primary-accent);
   --color-card-bg: var(--card-bg);
-  --font-sans: 'DotumCustom', sans-serif;
+  --font-sans: "Jeju Gothic", sans-serif;
   --font-mono: ui-monospace, monospace;
 }
 
@@ -45,7 +36,7 @@
    Global / Body
    =========================== */
 * {
-  font-family: 'DotumCustom', sans-serif;
+  font-family: "Jeju Gothic", sans-serif;
 }
 
 body,
@@ -165,7 +156,7 @@ textarea {
 .welcome-subtitle {
   font-size: 24px;
   font-weight: 550;
-  font-family: 'DotumCustom', sans-serif;
+  font-family: "Jeju Gothic", sans-serif;
   color: var(--gray-900);
   margin-bottom: 1rem;
   line-height: 1.25;
