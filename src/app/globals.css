@@ -79,13 +79,7 @@ body {
   flex-direction: column;
 }
 
-@media (min-width: 768px) {
-  .app-container {
-    height: 92vh;
-    border-radius: 32px;
-    max-height: 900px;
-  }
-}
+
 
 /* ===========================
    Welcome Screen
@@ -134,9 +128,9 @@ body {
 }
 
 .welcome-bottom {
-  height: 40%;
+  flex: 1;
   background-color: white;
-  padding: 2.5rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
 }
@@ -146,8 +140,8 @@ body {
 }
 
 .welcome-subtitle {
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 600;
   color: var(--gray-900);
   margin-bottom: 1rem;
   line-height: 1.25;
@@ -556,7 +550,7 @@ body {
    Buttons
    =========================== */
 .btn-primary {
-  width: 90%;
+  width: 100%;
   height: 58px;
   background-color: var(--primary-accent);
   color: white;
@@ -570,7 +564,7 @@ body {
   font-size: 1.125rem;
   cursor: pointer;
   border: none;
-  margin: 0 20px;
+  margin: 0;
   text-decoration: none;
 }
 
@@ -659,10 +653,26 @@ body {
   flex-direction: column;
 }
 
+.admin-container-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 @media (min-width: 768px) {
   .admin-container {
     align-items: center;
     padding: 2rem;
+  }
+  .admin-container-inner {
+    max-width: 1200px;
+    width: 100%;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 100vh;
+    overflow: visible;
   }
 }
 
@@ -984,7 +994,6 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
 }
 
 .saved-results-info {
@@ -1019,4 +1028,141 @@ body {
 
 .saved-results-btn:hover {
   opacity: 0.85;
+}
+
+@media (min-width: 768px) {
+  .app-wrapper {
+    background-color: white; /* Make background white to blend in */
+  }
+  .app-container {
+    height: 100vh;
+    height: 100dvh;
+    max-width: 100%;
+    border-radius: 0;
+    max-height: none;
+    box-shadow: none;
+  }
+
+  /* Desktop layout for welcome screen */
+  .welcome-container {
+    flex-direction: row;
+    height: 100%;
+  }
+  .welcome-top {
+    width: 50%;
+    height: 100%;
+  }
+  .welcome-bottom {
+    width: 50%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    text-align: center;
+  }
+  .welcome-card {
+    border-radius: 0;
+    width: 100%;
+  }
+  .welcome-title {
+    text-align: center;
+  }
+
+  /* Desktop layout for onboarding screen */
+  .onboarding-container {
+    flex-direction: row;
+  }
+  .onboarding-header {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem;
+    text-align: center;
+  }
+  .onboarding-card {
+    width: 50%;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem;
+  }
+  .onboarding-card > form {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  /* Desktop layout for quiz screen */
+  .quiz-container {
+    flex-direction: row;
+  }
+  .quiz-header {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem;
+    gap: 3rem;
+    text-align: center;
+  }
+  .quiz-card {
+    width: 60%;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem;
+  }
+  .quiz-card > div {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .quiz-card-stack {
+    display: none;
+  }
+  
+  /* Desktop layout for results screen */
+  .results-container {
+    flex-direction: row;
+  }
+  .results-card {
+    width: 100%;
+    border-radius: 0;
+    padding: 3rem 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .results-card > * {
+    max-width: 1000px;
+  }
+  .results-header-title {
+    font-size: 36px;
+    text-align: center;
+  }
+  .results-role-section {
+    text-align: center;
+  }
+  .aspect-cards-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    width: 100%;
+  }
+  .aspect-card {
+    width: calc(33.333% - 1rem);
+  }
+  .btn-primary-full {
+    width: 300px;
+    margin: 0 auto;
+  }
 }

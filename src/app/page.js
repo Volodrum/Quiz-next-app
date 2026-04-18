@@ -363,7 +363,6 @@ export default function QuizApp() {
                   <div className="saved-results-banner">
                     <div className="saved-results-info">
                       <span className="saved-results-title">Ваш результат збережено</span>
-                      <span className="saved-results-subtitle">Ви вже проходили цей тест</span>
                     </div>
                     <button onClick={viewSavedResults} className="saved-results-btn">
                       Переглянути
@@ -371,14 +370,13 @@ export default function QuizApp() {
                   </div>
                 )}
               </div>
-            </div>
-
-            <button 
+              <button 
                 onClick={() => setStep("onboarding")}
                 className="btn-primary"
               >
                 Далі
               </button>
+            </div>
           </div>
         )}
 
