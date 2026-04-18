@@ -1,10 +1,4 @@
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin", "cyrillic"],
-});
 
 export const metadata = {
   title: "Create Next App",
@@ -13,11 +7,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html
-      lang="uk"
-      className={`${inter.variable}`}
-    >
-      <body className={inter.className}>{children}</body>
+    <html lang="uk">
+      <body>{children}</body>
     </html>
   );
 }

@@ -2,9 +2,12 @@
 
 @font-face {
   font-family: 'DotumCustom';
-  src: url('/dotum.ttc') format('truetype');
+  src:
+    url('/dotum.ttc') format('truetype'),
+    url('/UnDotum.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 /* ===========================
@@ -34,7 +37,7 @@
   --color-primary-dark: var(--primary-dark);
   --color-primary-accent: var(--primary-accent);
   --color-card-bg: var(--card-bg);
-  --font-sans: var(--font-inter);
+  --font-sans: 'DotumCustom', sans-serif;
   --font-mono: ui-monospace, monospace;
 }
 
@@ -42,7 +45,7 @@
    Global / Body
    =========================== */
 * {
-  font-family: var(--font-inter), sans-serif;
+  font-family: 'DotumCustom', sans-serif;
 }
 
 body,
@@ -162,7 +165,7 @@ textarea {
 .welcome-subtitle {
   font-size: 24px;
   font-weight: 550;
-  font-family: 'DotumCustom', var(--font-inter), sans-serif;
+  font-family: 'DotumCustom', sans-serif;
   color: var(--gray-900);
   margin-bottom: 1rem;
   line-height: 1.25;
@@ -434,19 +437,23 @@ textarea {
   margin-bottom: 1.5rem;
 }
 
+.question-block {
+  margin-bottom: 0.25rem;
+}
+
 .question-text {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--gray-900);
   line-height: 1.2;
-  margin-bottom: 2rem;
+  margin: 0 0 0.25rem 0;
 }
 
 .answers-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-top: auto;
+  margin-top: 0;
 }
 
 .answer-btn {

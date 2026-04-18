@@ -35,6 +35,29 @@ const LIKERT_SCALE = [
   { label: "Не згоден", value: -2 }
 ];
 
+const QUIZ_RESULT_STORAGE_KEY = "quiz_result";
+const QUIZ_PROGRESS_STORAGE_KEY = "quiz_progress";
+const DEFAULT_USER_INFO = { fullName: "", group: "", phone: "+380" };
+const INITIAL_SCORES = {
+  strategist: 0,
+  networker: 0,
+  organizer: 0,
+  communicator: 0,
+  negotiator: 0,
+  motivator: 0,
+  innovator: 0
+};
+const WELCOME_PILLS = [
+  { text: "📸 SMM", color: "peach", w: 150 },
+  { text: "🤖 Кодер", color: "red", w: 165 },
+  { text: "⚽", color: "peach", w: 58 },
+  { text: "📣 Комунікатор", color: "red", w: 185 },
+  { text: "⚖️ Переговорник", color: "peach", w: 192 },
+  { text: "🔥", color: "red", w: 58 },
+  { text: "💡 Інноватор", color: "peach", w: 162 },
+];
+const PILL_H = 44;
+
 const ROLES_INFO = {
   strategist: {
     title: "Стратег (The Visionary)",
@@ -119,11 +142,10 @@ const normalizePhoneInput = (value) => {
 
 export default function QuizApp() {
   const [step, setStep] = useState("welcome"); // welcome, onboarding, quiz, result
-  const [userInfo, setUserInfo] = useState({ fullName: "", group: "", phone: "+380" });
+  const [userInfo, setUserInfo] = useState({ ...DEFAULT_USER_INFO });
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [scores, setScores] = useState({
-    strategist: 0, networker: 0, organizer: 0, communicator: 0, negotiator: 0, motivator: 0, innovator: 0
-  });
+  const [scores, setScores] = useState({ ...INITIAL_SCORES });
+  const [answers, setAnswers] = useState({});
   const [finalRole, setFinalRole] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -136,33 +158,71 @@ export default function QuizApp() {
   const pillRefs = useRef([]);
   const physicsCleanup = useRef(null);
 
-  // Fixed preset pill data for the welcome heap
-  const WELCOME_PILLS = [
-    { text: "📸 SMM", color: "peach", w: 150 },
-    { text: "🤖 Кодер", color: "red", w: 165 },
-    { text: "⚽", color: "peach", w: 58 },
-    { text: "📣 Комунікатор", color: "red", w: 185 },
-    { text: "⚖️ Переговорник", color: "peach", w: 192 },
-    { text: "🔥", color: "red", w: 58 },
-    { text: "💡 Інноватор", color: "peach", w: 162 },
-  ];
-
-  const PILL_H = 44;
-
-  // On mount: check localStorage for saved results
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('quiz_result');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.role && ROLES_INFO[parsed.role]) {
-          setHasSavedResult(true);
+    const timerId = setTimeout(() => {
+      try {
+        const savedResultRaw = localStorage.getItem(QUIZ_RESULT_STORAGE_KEY);
+        if (savedResultRaw) {
+          const parsedResult = JSON.parse(savedResultRaw);
+          if (parsedResult.role && ROLES_INFO[parsedResult.role]) {
+            setHasSavedResult(true);
+          }
         }
+
+        const savedProgressRaw = localStorage.getItem(QUIZ_PROGRESS_STORAGE_KEY);
+        if (!savedProgressRaw) return;
+
+        const parsedProgress = JSON.parse(savedProgressRaw);
+        if (!["onboarding", "quiz"].includes(parsedProgress.step)) return;
+
+        const savedIndex = Number.isInteger(parsedProgress.currentQuestionIndex)
+          ? parsedProgress.currentQuestionIndex
+          : 0;
+        const normalizedIndex = Math.max(0, Math.min(savedIndex, QUESTIONS.length - 1));
+
+        const normalizedScores = { ...INITIAL_SCORES };
+        if (parsedProgress.scores && typeof parsedProgress.scores === "object") {
+          Object.keys(INITIAL_SCORES).forEach((role) => {
+            const value = Number(parsedProgress.scores[role]);
+            normalizedScores[role] = Number.isFinite(value) ? value : 0;
+          });
+        }
+
+        setUserInfo({
+          fullName: parsedProgress.userInfo?.fullName || "",
+          group: parsedProgress.userInfo?.group || "",
+          phone: parsedProgress.userInfo?.phone || "+380"
+        });
+        setScores(normalizedScores);
+        setAnswers(
+          parsedProgress.answers && typeof parsedProgress.answers === "object"
+            ? parsedProgress.answers
+            : {}
+        );
+        setCurrentQuestionIndex(normalizedIndex);
+        setStep(parsedProgress.step);
+      } catch (e) {
+        // localStorage not available
       }
+    }, 0);
+
+    return () => clearTimeout(timerId);
+  }, []);
+
+  useEffect(() => {
+    if (step !== "onboarding" && step !== "quiz") return;
+    try {
+      localStorage.setItem(QUIZ_PROGRESS_STORAGE_KEY, JSON.stringify({
+        step,
+        userInfo,
+        currentQuestionIndex,
+        scores,
+        answers
+      }));
     } catch (e) {
       // localStorage not available
     }
-  }, []);
+  }, [step, userInfo, currentQuestionIndex, scores, answers]);
 
   // Matter.js physics simulation for welcome pills
   useEffect(() => {
@@ -270,8 +330,9 @@ export default function QuizApp() {
   // Restore saved results and jump to result screen
   const viewSavedResults = () => {
     try {
-      const saved = JSON.parse(localStorage.getItem('quiz_result'));
+      const saved = JSON.parse(localStorage.getItem(QUIZ_RESULT_STORAGE_KEY));
       if (saved && saved.role && ROLES_INFO[saved.role]) {
+        localStorage.removeItem(QUIZ_PROGRESS_STORAGE_KEY);
         setFinalRole(saved.role);
         setUserInfo({
           fullName: saved.fullName || "",
@@ -301,10 +362,14 @@ export default function QuizApp() {
   };
 
   const handleAnswer = (value) => {
+    if (selectedAnswer !== null) return;
     setSelectedAnswer(value);
+    const currentQuestion = QUESTIONS[currentQuestionIndex];
+    const nextAnswers = { ...answers, [currentQuestion.id]: value };
+    setAnswers(nextAnswers);
 
     setTimeout(() => {
-      const currentRole = QUESTIONS[currentQuestionIndex].role;
+      const currentRole = currentQuestion.role;
       const newScores = {
         ...scores,
         [currentRole]: scores[currentRole] + value
@@ -315,12 +380,12 @@ export default function QuizApp() {
       if (currentQuestionIndex < QUESTIONS.length - 1) {
         setCurrentQuestionIndex(prev => prev + 1);
       } else {
-        calculateResult(newScores);
+        calculateResult(newScores, nextAnswers);
       }
     }, 400);
   };
 
-  const calculateResult = async (finalScores) => {
+  const calculateResult = async (finalScores, finalAnswers = answers) => {
     setIsSaving(true);
     let maxScore = -Infinity;
     let winningRole = "strategist";
@@ -337,12 +402,13 @@ export default function QuizApp() {
 
     // Save to localStorage so user can view results after reload
     try {
-      localStorage.setItem('quiz_result', JSON.stringify({
+      localStorage.removeItem(QUIZ_PROGRESS_STORAGE_KEY);
+      localStorage.setItem(QUIZ_RESULT_STORAGE_KEY, JSON.stringify({
         role: winningRole,
         fullName: userInfo.fullName,
         group: userInfo.group,
         phone: userInfo.phone,
-        timestamp: Date.now()
+        answers: finalAnswers
       }));
       setHasSavedResult(true);
     } catch (e) {
@@ -366,12 +432,18 @@ export default function QuizApp() {
   };
 
   const restartQuiz = () => {
-    setScores({ strategist: 0, networker: 0, organizer: 0, communicator: 0, negotiator: 0, motivator: 0, innovator: 0 });
+    setScores({ ...INITIAL_SCORES });
+    setAnswers({});
     setCurrentQuestionIndex(0);
     setStep("welcome");
-    setUserInfo({ fullName: "", group: "", phone: "" });
+    setUserInfo({ ...DEFAULT_USER_INFO });
     setIsSaved(false);
     setSelectedAnswer(null);
+    try {
+      localStorage.removeItem(QUIZ_PROGRESS_STORAGE_KEY);
+    } catch (e) {
+      // localStorage not available
+    }
   };
 
   return (
@@ -532,7 +604,7 @@ export default function QuizApp() {
             <div className="quiz-card">
               <div className="quiz-card-stack"></div>
 
-              <div>
+              <div className="question-block">
                 <span className="question-badge">
                   Питання {currentQuestionIndex + 1}
                 </span>
