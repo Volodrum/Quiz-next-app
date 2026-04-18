@@ -145,9 +145,29 @@ export default function QuizApp() {
 
       const container = rolesContainerRef.current;
       if (!container) return;
+      // Wait one frame so pills are fully laid out before measuring sizes.
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      if (cancelled) return;
+
       const { width: cW, height: cH } = container.getBoundingClientRect();
 
-      const engine = Matter.Engine.create({ gravity: { x: 0, y: 1.8 } });
+      const pillSizes = WELCOME_PILLS.map((pill, i) => {
+        const el = pillRefs.current[i];
+        if (!el) {
+          return { width: pill.w, height: PILL_H };
+        }
+        const rect = el.getBoundingClientRect();
+        return {
+          width: Math.max(48, Math.round(rect.width)),
+          height: Math.max(32, Math.round(rect.height)),
+        };
+      });
+
+      const engine = Matter.Engine.create({ gravity: { x: 0, y: 1.55 } });
+      // Increase solver iterations to reduce body interpenetration.
+      engine.positionIterations = 10;
+      engine.velocityIterations = 8;
+      engine.constraintIterations = 4;
 
       // Walls: bottom, left, right (no top — pills fall in from above)
       const wallOpts = { isStatic: true, friction: 0.8, restitution: 0.1 };
@@ -159,15 +179,18 @@ export default function QuizApp() {
 
       // Create pill bodies — staggered start positions above the viewport
       const bodies = WELCOME_PILLS.map((pill, i) => {
+        const { width, height } = pillSizes[i];
+        const xPadding = Math.min(40, Math.max(16, width / 2 + 8));
         return Matter.Bodies.rectangle(
-          40 + Math.random() * (cW - 80),
+          xPadding + Math.random() * Math.max(1, cW - xPadding * 2),
           -(i * 65 + 60),
-          pill.w,
-          PILL_H,
+          width,
+          height,
           {
-            chamfer: { radius: PILL_H / 2 },
+            chamfer: { radius: height / 2 },
             restitution: 0.25,
             friction: 0.6,
+            slop: 0.01,
             density: 0.003,
             angle: (Math.random() - 0.5) * 0.5,
           }
@@ -185,8 +208,8 @@ export default function QuizApp() {
         bodies.forEach((body, i) => {
           const el = pillRefs.current[i];
           if (el) {
-            const x = body.position.x - WELCOME_PILLS[i].w / 2;
-            const y = body.position.y - PILL_H / 2;
+            const x = body.position.x - pillSizes[i].width / 2;
+            const y = body.position.y - pillSizes[i].height / 2;
             el.style.transform = `translate(${x}px, ${y}px) rotate(${body.angle}rad)`;
             el.style.opacity = '1';
           }
