@@ -1,5 +1,20 @@
-@import url("https://fonts.googleapis.com/css2?family=Jeju+Gothic&display=swap");
 @import "tailwindcss";
+
+@font-face {
+  font-family: "JejuGothicLocal";
+  src: url("/fonts/JejuGothic-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "UnDotum";
+  src: url("/UnDotum.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* ===========================
    CSS Variables
@@ -28,7 +43,7 @@
   --color-primary-dark: var(--primary-dark);
   --color-primary-accent: var(--primary-accent);
   --color-card-bg: var(--card-bg);
-  --font-sans: "Jeju Gothic", sans-serif;
+  --font-sans: "JejuGothicLocal", "UnDotum", sans-serif;
   --font-mono: ui-monospace, monospace;
 }
 
@@ -36,7 +51,8 @@
    Global / Body
    =========================== */
 * {
-  font-family: "Jeju Gothic", sans-serif;
+  font-family: "JejuGothicLocal", "UnDotum", sans-serif;
+  letter-spacing: -0.02em;
 }
 
 body,
@@ -156,7 +172,7 @@ textarea {
 .welcome-subtitle {
   font-size: 24px;
   font-weight: 550;
-  font-family: "Jeju Gothic", sans-serif;
+  font-family: "JejuGothicLocal", "UnDotum", sans-serif;
   color: var(--gray-900);
   margin-bottom: 1rem;
   line-height: 1.25;
@@ -245,6 +261,9 @@ textarea {
 
 .form-submit-area {
   margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .form-group {
@@ -445,6 +464,11 @@ textarea {
   flex-direction: column;
   gap: 0.75rem;
   margin-top: 0;
+}
+
+.quiz-actions {
+  margin-top: auto;
+  padding-top: 1.25rem;
 }
 
 .answer-btn {
@@ -687,6 +711,69 @@ textarea {
 
 .btn-primary-full:active {
   transform: scale(0.98);
+}
+
+.btn-primary-full--onboarding-outline {
+  background-color: #ffffff;
+  color: #B40104;
+  border: 2px solid #B40104;
+  box-shadow: none;
+}
+
+.btn-primary-full--onboarding-outline:hover {
+  opacity: 1;
+  background-color: #fff7f7;
+  border-color: #a90104;
+  color: #a90104;
+}
+
+.btn-primary-full--onboarding-outline:active {
+  transform: scale(0.98);
+  background-color: #ffeeee;
+}
+
+.btn-home-outline {
+  width: 100%;
+  min-height: 58px;
+  background-color: var(--primary-accent);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-home-outline:hover {
+  opacity: 0.9;
+}
+
+.btn-home-outline:active {
+  transform: scale(0.98);
+}
+
+.btn-home-outline:focus-visible {
+  outline: 2px solid rgba(255, 163, 134, 0.5);
+  outline-offset: 2px;
+}
+
+.btn-home-outline--onboarding {
+  /* Kept for markup compatibility */
+}
+
+.btn-home-outline--quiz {
+  /* Kept for markup compatibility */
+}
+
+.form-submit-area .btn-primary-full,
+.form-submit-area .btn-home-outline {
+  margin: 0;
 }
 
 /* ===========================
@@ -1429,6 +1516,15 @@ textarea {
   }
 
   .btn-primary-full {
+    width: 300px;
+    margin: 0 auto;
+  }
+
+  .form-submit-area .btn-primary-full {
+    margin: 0 auto;
+  }
+
+  .form-submit-area .btn-home-outline {
     width: 300px;
     margin: 0 auto;
   }

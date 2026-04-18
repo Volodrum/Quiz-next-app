@@ -584,9 +584,16 @@ export default function QuizApp() {
                 <div className="form-submit-area">
                   <button
                     type="submit"
-                    className="btn-primary-full"
+                    className="btn-home-outline btn-home-outline--onboarding"
                   >
                     Почати тест
+                  </button>
+                  <button
+                    type="button"
+                    onClick={restartQuiz}
+                    className="btn-primary-full btn-primary-full--onboarding-outline"
+                  >
+                    Додому
                   </button>
                 </div>
               </form>
@@ -650,6 +657,16 @@ export default function QuizApp() {
                     )}
                   </button>
                 ))}
+              </div>
+
+              <div className="quiz-actions">
+                <button
+                  type="button"
+                  onClick={restartQuiz}
+                  className="btn-home-outline btn-home-outline--quiz"
+                >
+                  Додому
+                </button>
               </div>
             </div>
           </div>
