@@ -1,16 +1,8 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: "JejuGothicLocal";
-  src: url("/fonts/JejuGothic-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "UnDotum";
-  src: url("/UnDotum.ttf") format("truetype");
+  font-family: "DotumLocal";
+  src: url("/fonts/Dotum-03.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -43,7 +35,7 @@
   --color-primary-dark: var(--primary-dark);
   --color-primary-accent: var(--primary-accent);
   --color-card-bg: var(--card-bg);
-  --font-sans: "JejuGothicLocal", "UnDotum", sans-serif;
+  --font-sans: "DotumLocal", sans-serif;
   --font-mono: ui-monospace, monospace;
 }
 
@@ -51,7 +43,7 @@
    Global / Body
    =========================== */
 * {
-  font-family: "JejuGothicLocal", "UnDotum", sans-serif;
+  font-family: "DotumLocal", sans-serif;
   letter-spacing: -0.02em;
 }
 
@@ -172,7 +164,7 @@ textarea {
 .welcome-subtitle {
   font-size: 24px;
   font-weight: 550;
-  font-family: "JejuGothicLocal", "UnDotum", sans-serif;
+  font-family: "DotumLocal", sans-serif;
   color: var(--gray-900);
   margin-bottom: 1rem;
   line-height: 1.25;
