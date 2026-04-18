@@ -87,6 +87,19 @@ const ROLES_INFO = {
   }
 };
 
+const normalizePhoneInput = (value) => {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return "";
+
+  // +CC XXX XXX XXX
+  const trimmedDigits = digits.slice(0, 11); // 2 for country code + 9 for local number
+  const countryCode = trimmedDigits.slice(0, 2);
+  const localPart = trimmedDigits.slice(2);
+  const groupedLocalPart = localPart.match(/.{1,3}/g)?.join(" ") || "";
+
+  return `+${countryCode}${groupedLocalPart ? ` ${groupedLocalPart}` : ""}`;
+};
+
 export default function QuizApp() {
   const [step, setStep] = useState("welcome"); // welcome, onboarding, quiz, result
   const [userInfo, setUserInfo] = useState({ fullName: "", group: "", phone: "" });
@@ -260,11 +273,12 @@ export default function QuizApp() {
     e.preventDefault();
     
     // Phone validation
-    const phoneDigits = userInfo.phone.replace(/\D/g, '');
-    if (phoneDigits.length < 10) {
-      setPhoneError("Будь ласка, введіть коректний номер телефону (мінімум 10 цифр)");
+    const normalizedPhone = normalizePhoneInput(userInfo.phone);
+    if (!/^\+\d{2}(?: \d{3}){3}$/.test(normalizedPhone)) {
+      setPhoneError("Формат номера: +CC XXX XXX XXX");
       return;
     }
+    setUserInfo(prev => ({ ...prev, phone: normalizedPhone }));
     setPhoneError("");
     setStep("quiz");
   };
@@ -442,10 +456,15 @@ export default function QuizApp() {
                       required
                       type="tel" 
                       className={`input-field ${phoneError ? 'input-error' : ''}`}
-                      placeholder="+380..."
+                      placeholder="+38 000 000 000"
+                      inputMode="numeric"
+                      autoComplete="tel"
+                      pattern={"\\+\\d{2}(?: \\d{3}){3}"}
+                      title="Формат: +CC XXX XXX XXX"
+                      maxLength={15}
                       value={userInfo.phone}
                       onChange={e => {
-                        setUserInfo({...userInfo, phone: e.target.value});
+                        setUserInfo({...userInfo, phone: normalizePhoneInput(e.target.value)});
                         if (phoneError) setPhoneError("");
                       }}
                     />
