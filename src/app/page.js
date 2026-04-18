@@ -140,6 +140,23 @@ const normalizePhoneInput = (value) => {
   return result;
 };
 
+const buildQuestionAnswersPayload = (answersMap) => {
+  return QUESTIONS
+    .map((question) => {
+      const selectedValue = answersMap[question.id];
+      if (typeof selectedValue !== "number") return null;
+
+      const selectedOption = LIKERT_SCALE.find((option) => option.value === selectedValue);
+      return {
+        question_id: question.id,
+        question_text: question.text,
+        selected_value: selectedValue,
+        selected_label: selectedOption?.label || String(selectedValue),
+      };
+    })
+    .filter(Boolean);
+};
+
 export default function QuizApp() {
   const [step, setStep] = useState("welcome"); // welcome, onboarding, quiz, result
   const [userInfo, setUserInfo] = useState({ ...DEFAULT_USER_INFO });
@@ -389,6 +406,7 @@ export default function QuizApp() {
     setIsSaving(true);
     let maxScore = -Infinity;
     let winningRole = "strategist";
+    const questionAnswersPayload = buildQuestionAnswersPayload(finalAnswers);
 
     for (const [role, score] of Object.entries(finalScores)) {
       if (score > maxScore) {
@@ -408,7 +426,8 @@ export default function QuizApp() {
         fullName: userInfo.fullName,
         group: userInfo.group,
         phone: userInfo.phone,
-        answers: finalAnswers
+        answers: finalAnswers,
+        question_answers: questionAnswersPayload
       }));
       setHasSavedResult(true);
     } catch (e) {
@@ -421,7 +440,8 @@ export default function QuizApp() {
         academic_group: userInfo.group,
         phone: userInfo.phone,
         role_id: winningRole,
-        role_name: ROLES_INFO[winningRole].title
+        role_name: ROLES_INFO[winningRole].title,
+        question_answers: questionAnswersPayload
       });
       setIsSaved(true);
     } catch (err) {
