@@ -126,13 +126,13 @@ textarea {
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
-  background: radial-gradient(circle at center, var(--burgundy-deep) 0%, #2a0505 100%);
+  background: radial-gradient(circle at center, #531111 0%, #2a0505 100%);
 }
 
 .welcome-title {
   font-size: 38px;
-  font-weight: 600;
-  background: linear-gradient(to right, #ede5e5, #B17D7D);
+  font-weight: 700;
+  background: linear-gradient(to right, #ede5e5, #d89a9a);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1345,6 +1345,7 @@ textarea {
   justify-content: space-between;
   gap: 1rem;
   margin-top: 1rem;
+  margin-bottom: 1rem;
  
 }
 
