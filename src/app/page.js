@@ -498,7 +498,7 @@ export default function QuizApp() {
             <div className="welcome-bottom">
               <div className="welcome-bottom-inner">
                 <h2 className="welcome-subtitle">
-                  Контент квізу, підібраний під твої інтереси
+                  Ким хочеш бути?
                 </h2>
                 <p className="welcome-description">
                   Дізнайся свою ідеальну роль у Студентському уряді. Ми підберемо позицію, яка найкраще відповідає твоїм навичкам та амбіціям.

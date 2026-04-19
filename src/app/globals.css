@@ -44,7 +44,7 @@
    =========================== */
 * {
   font-family: "DotumLocal", sans-serif;
-  letter-spacing: -0.02em;
+  letter-spacing: -1px;
 }
 
 body,
@@ -130,14 +130,14 @@ textarea {
 }
 
 .welcome-title {
-  font-size: 34px;
-  font-weight: 400;
-  background: linear-gradient(to right, #fff, #B17D7D);
+  font-size: 38px;
+  font-weight: 600;
+  background: linear-gradient(to right, #ede5e5, #B17D7D);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   line-height: 1.1;
-  letter-spacing: -0.025em;
+  letter-spacing: 0.4px;
   z-index: 20;
 }
 
@@ -162,12 +162,15 @@ textarea {
 }
 
 .welcome-subtitle {
-  font-size: 24px;
-  font-weight: 550;
+  font-size: 1.7rem;
+  /* font-weight: 1000; */
   font-family: "DotumLocal", sans-serif;
   color: var(--gray-900);
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   line-height: 1.25;
+  letter-spacing: -1.5px;
+  -webkit-text-stroke: 1.3px black; /* Толщина и цвет */
+  text-stroke: 1.3px black;
 }
 
 .welcome-description {
@@ -188,20 +191,22 @@ textarea {
 }
 
 .onboarding-header {
-  padding: 3rem 2rem 2rem 2rem;
+  padding: 1.5rem;
 }
 
 .onboarding-title {
-  font-size: 32px;
-  font-weight: 350;
+  font-size: 1.8rem;
+  /* font-weight: 350; */
   color: white;
   line-height: 1.1;
   margin-bottom: 0.5rem;
+  -webkit-text-stroke: 0.7px white; /* Толщина и цвет */
+  text-stroke: 0.7px white;
 }
 
 .onboarding-subtitle {
   color: rgba(255, 255, 255, 0.7);
-  font-size: 1rem;
+  font-size: 0.8rem;
 }
 
 .onboarding-card {
@@ -348,15 +353,16 @@ textarea {
 }
 
 .quiz-header {
-  padding: 2rem 2rem 1.5rem 2rem;
+  padding: 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .quiz-title {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 1.8rem;
+    -webkit-text-stroke: 0.7px white; /* Толщина и цвет */
+  text-stroke: 0.7px white;
   color: white;
   max-width: 250px;
   line-height: 1.1;
@@ -455,7 +461,7 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-top: 0;
+  margin-top: 1rem;
 }
 
 .quiz-actions {
@@ -546,22 +552,26 @@ textarea {
 }
 
 .results-header-title {
-  font-size: 30px;
-  font-weight: 500;
+  font-size: 2rem;
+  /* font-weight: 500; */
   color: var(--burgundy);
   margin-bottom: 0.5rem;
+  -webkit-text-stroke: 2px var(--burgundy); /* Толщина и цвет */
+  text-stroke: 2px var(--burgundy);
 }
 
 .results-role-section {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .results-role-title {
-  font-size: 20px;
-  font-weight: 200;
+  font-size: 1.7rem;
+  /* font-weight: 200; */
   color: var(--gray-900);
   margin-bottom: 0.2rem;
   line-height: 1.2;
+  -webkit-text-stroke: 1.2px var(--gray-900); /* Толщина и цвет */
+  text-stroke: 1.2px var(--gray-900);
 }
 
 .results-role-subtitle {
@@ -575,10 +585,10 @@ textarea {
 .aspect-cards-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
   flex: 1;
   justify-content: flex-start;
-  margin-bottom: auto;
+  margin-bottom: 1rem;
 }
 
 .aspect-card {
@@ -588,18 +598,18 @@ textarea {
   border: 1px solid #ffe4e6;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
 }
 
 .aspect-card-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
 .aspect-icon-circle {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   background-color: #be123c;
   border-radius: 50%;
   display: flex;
@@ -609,11 +619,17 @@ textarea {
   font-size: 0.875rem;
   flex-shrink: 0;
 }
+.aspect-icon-circle svg { 
+  width: 14px !important;
+  height: 14px !important;
+}
 
 .aspect-title {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 350;
   color: var(--gray-900);
+  -webkit-text-stroke: 0.5px var(--gray-900); /* Толщина и цвет */
+  text-stroke: 0.5px var(--gray-900);
 }
 
 .aspect-description {
@@ -647,13 +663,13 @@ textarea {
    =========================== */
 .btn-primary {
   width: 100%;
-  height: 58px;
+  min-height: 58px;
   background-color: var(--primary-accent);
   color: white;
-  font-weight: 600;
+  /* font-weight: 600; */
   border-radius: 9999px;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -662,6 +678,8 @@ textarea {
   border: none;
   margin: 0;
   text-decoration: none;
+   -webkit-text-stroke: 1.2px rgb(255, 255, 255); /* Толщина и цвет */
+  text-stroke: 1.2px rgb(255, 255, 255);
 }
 
 .btn-primary:hover {
@@ -680,13 +698,13 @@ textarea {
 
 .btn-primary-full {
   width: 100%;
-  height: 58px;
+  min-height: 58px;
   background-color: var(--primary-accent);
   color: white;
-  font-weight: 600;
+  /* font-weight: 600; */
   border-radius: 9999px;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -695,6 +713,8 @@ textarea {
   border: none;
   margin: 0 0 1.5rem 0;
   text-decoration: none;
+   -webkit-text-stroke: 1.2px rgb(255, 255, 255); /* Толщина и цвет */
+  text-stroke: 1.2px rgb(255, 255, 255);
 }
 
 .btn-primary-full:hover {
@@ -710,6 +730,8 @@ textarea {
   color: #B40104;
   border: 2px solid #B40104;
   box-shadow: none;
+  -webkit-text-stroke: 1.2px #B40104; /* Толщина и цвет */
+  text-stroke: 1.2px #B40104;
 }
 
 .btn-primary-full--onboarding-outline:hover {
@@ -729,7 +751,7 @@ textarea {
   min-height: 58px;
   background-color: var(--primary-accent);
   color: #ffffff;
-  font-weight: 600;
+  /* font-weight: 600; */
   border-radius: 9999px;
   border: none;
   display: flex;
@@ -738,8 +760,10 @@ textarea {
   font-size: 1.125rem;
   cursor: pointer;
   text-decoration: none;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); */
   transition: all 0.3s ease-in-out;
+  -webkit-text-stroke: 1.2px rgb(255, 255, 255); /* Толщина и цвет */
+  text-stroke: 1.2px rgb(255, 255, 255);
 }
 
 .btn-home-outline:hover {
@@ -1320,6 +1344,8 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  margin-top: 1rem;
+ 
 }
 
 .saved-results-info {
