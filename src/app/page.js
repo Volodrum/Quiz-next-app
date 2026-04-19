@@ -606,7 +606,7 @@ export default function QuizApp() {
           <div className="quiz-container">
             <div className="quiz-header">
               <h1 className="quiz-title">
-                Випробуй себе!
+                Розкрий приховане ✨
               </h1>
               <div className="progress-container">
                 <svg className="progress-ring">
@@ -659,15 +659,7 @@ export default function QuizApp() {
                 ))}
               </div>
 
-              <div className="quiz-actions">
-                <button
-                  type="button"
-                  onClick={restartQuiz}
-                  className="btn-home-outline btn-home-outline--quiz"
-                >
-                  Додому
-                </button>
-              </div>
+
             </div>
           </div>
         )}
